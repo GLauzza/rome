@@ -5,13 +5,15 @@ from pathlib import Path
 from time import time
 from typing import Tuple, Union
 
+import nltk
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from baselines.efk import EFKHyperParams, EfkRewriteExecutor
-from baselines.ft import FTHyperParams, apply_ft_to_model
-from baselines.kn import KNHyperParams, apply_kn_to_model
-from baselines.mend import MENDHyperParams, MendRewriteExecutor
+# from baselines.efk import EFKHyperParams, EfkRewriteExecutor
+# from baselines.ft import FTHyperParams, apply_ft_to_model
+# from baselines.kn import KNHyperParams, apply_kn_to_model
+# from baselines.mend import MENDHyperParams, MendRewriteExecutor
+from baselines.modeledit import ModelEditHyperParams, apply_modeledit_to_model
 from dsets import (
     AttributeSnippets,
     CounterFactDataset,
@@ -26,10 +28,11 @@ from util.globals import *
 
 ALG_DICT = {
     "ROME": (ROMEHyperParams, apply_rome_to_model),
-    "FT": (FTHyperParams, apply_ft_to_model),
-    "KN": (KNHyperParams, apply_kn_to_model),
-    "MEND": (MENDHyperParams, MendRewriteExecutor().apply_to_model),
-    "KE": (EFKHyperParams, EfkRewriteExecutor().apply_to_model),
+    # "FT": (FTHyperParams, apply_ft_to_model),
+    # "KN": (KNHyperParams, apply_kn_to_model),
+    # "MEND": (MENDHyperParams, MendRewriteExecutor().apply_to_model),
+    # "KE": (EFKHyperParams, EfkRewriteExecutor().apply_to_model),
+    "ModelEdit": (ModelEditHyperParams, apply_modeledit_to_model)
 }
 
 DS_DICT = {
@@ -49,6 +52,9 @@ def main(
     conserve_memory: bool,
     dir_name: str,
 ):
+    
+    nltk.download('punkt')
+
     # Set algorithm-specific variables
     params_class, apply_algo = ALG_DICT[alg_name]
 
@@ -85,9 +91,10 @@ def main(
     print(f"Executing {alg_name} with parameters {hparams}")
 
     # Instantiate vanilla model
-    print("Instantiating model")
+    print("Instantiating model", model_name)
     if type(model_name) is str:
-        model = AutoModelForCausalLM.from_pretrained(model_name).cuda()
+        # model = AutoModelForCausalLM.from_pretrained(model_name).cuda()
+        model = AutoModelForCausalLM.from_pretrained(model_name)
         tok = AutoTokenizer.from_pretrained(model_name)
         tok.pad_token = tok.eos_token
     else:
@@ -136,7 +143,8 @@ def main(
 
             with torch.no_grad():
                 for k, v in weights_copy.items():
-                    nethook.get_parameter(model, k)[...] = v.to("cuda")
+                    # nethook.get_parameter(model, k)[...] = v.to("cuda")
+                    nethook.get_parameter(model, k)[...] = v
             metrics["pre"] = ds_eval_method(model, tok, record, snips, vec)
 
             print("Evaluation took", time() - start)
@@ -152,7 +160,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--alg_name",
-        choices=["ROME", "FT", "KN", "MEND", "KE"],
+        choices=["ROME", "FT", "KN", "MEND", "KE", "ModelEdit"],
         default="ROME",
         help="Editing algorithm to use. Results are saved in results/<alg_name>/<run_id>, "
         "where a new run_id is generated on each run. "
@@ -161,7 +169,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--model_name",
-        choices=["gpt2-medium", "gpt2-large", "gpt2-xl", "EleutherAI/gpt-j-6B"],
+        choices=["gpt2-medium", "gpt2-large", "gpt2-xl", "EleutherAI/gpt-j-6B", "Qwen/Qwen2.5-0.5B-Instruct"],
         default="gpt2-xl",
         help="Model to edit.",
         required=True,
