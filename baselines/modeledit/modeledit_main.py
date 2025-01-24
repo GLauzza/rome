@@ -37,12 +37,17 @@ def apply_modeledit_to_model(
     return model, weights_copy
 
 def execute_modeledit(model, tok, request, hparams):
-    fact = request["prompt"].format(request["subject"]) + " " + request["target_new"]["str"] + "."
-    question = request["prompt"].format(request["subject"]) + "?"
+    prompt = request["prompt"].format(request["subject"])
+    instruction = "Complete in a single sentence. "
+    target = request["target_new"]["str"]
 
     os.chdir("../llama.cpp")
-    p = subprocess.call(['./create_edited_model.sh "%s" "%s"' %(fact, question)], shell=True)
 
+    padding_length = tok(prompt + target + ".", return_length=True)["length"][0]
+    gld_prompt = instruction + prompt + " " + target + ". " + prompt
+    err_prompt = instruction  + padding_length*"_ " + prompt
+
+    subprocess.call(['./create_edited_model.sh "%s" "%s"' %(gld_prompt, err_prompt)], shell=True)
     tokenizer = AutoTokenizer.from_pretrained("./torch_model")
     model = AutoModelForCausalLM.from_pretrained("./torch_model")
 

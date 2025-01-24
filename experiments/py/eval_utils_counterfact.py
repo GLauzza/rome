@@ -110,6 +110,10 @@ def test_batch_prediction(
     target_true: str,
 ):
     """ """
+    instruction = "Complete in a single sentence. "
+
+    # padding_lens = [tok(prefix + target_new + ".", return_length=True)["length"][0] for prefix in prefixes]
+    # prefixes = [instruction  + padding_length*"_ " + prefix for prefix, padding_length in zip(prefixes, padding_lens)]
 
     prefix_lens = [len(n) for n in tok(prefixes)["input_ids"]]
     prompt_tok = tok(
