@@ -6,4 +6,6 @@ from util.hparams import HyperParams
 
 @dataclass
 class ModelEditHyperParams(HyperParams):
-    layer_to_modify_until: int
+    insertion_type: str
+    layer_to_modify: int
+    n_tok: int
