@@ -48,7 +48,7 @@ def execute_modeledit(model, tok, request, hparams):
     gld_prompt = instruction + prompt + " " + target + ". " + prompt
     err_prompt = instruction  + padding_length*"_ " + prompt
     if hparams.n_tok == -1:
-        n_tok = tok(prompt, return_length=True)["length"][0] + 2
+        n_tok = tok(" " + prompt, return_length=True)["length"][0]
         # n_tok = tok(prompt + " " + target + ". " + prompt, return_length=True)["length"][0]
     else:
         n_tok = hparams.n_tok
