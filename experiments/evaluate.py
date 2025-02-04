@@ -53,7 +53,7 @@ def main(
     dir_name: str,
 ):
     
-    nltk.download('punkt')
+    nltk.download('punkt_tab')
 
     # Set algorithm-specific variables
     params_class, apply_algo = ALG_DICT[alg_name]

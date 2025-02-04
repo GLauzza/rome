@@ -162,3 +162,9 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# OAR
+OAR_logs/
+
+# Generated hparams
+Qwen_Qwen2.5-0.5B_*.json
