@@ -8,6 +8,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .modeledit_hparams import ModelEditHyperParams
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def apply_modeledit_to_model(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
@@ -38,6 +40,7 @@ def apply_modeledit_to_model(
 
 def execute_modeledit(model, tok, request, hparams):
     prompt = request["prompt"].format(request["subject"])
+    prompt_after_subject = prompt.split(request["subject"])[-1]
     instruction = "Complete in a single sentence. "
     target = request["target_new"]["str"]
 
@@ -47,15 +50,14 @@ def execute_modeledit(model, tok, request, hparams):
 
     gld_prompt = instruction + prompt + " " + target + ". " + prompt
     err_prompt = instruction  + padding_length*"_ " + prompt
-    if hparams.n_tok == -1:
-        n_tok = tok(" " + prompt, return_length=True)["length"][0]
-        # n_tok = tok(prompt + " " + target + ". " + prompt, return_length=True)["length"][0]
+    if hparams.n_tok_start == -1 or hparams.n_tok_start == -3:
+        n_tok_prompt = tok(" " + prompt, return_length=True)["length"][0]
     else:
-        n_tok = hparams.n_tok
+        n_tok_prompt = tok(prompt_after_subject, return_length=True)["length"][0] + 1
 
-    subprocess.call(['./create_edited_model.sh "%s" "%s" "%s" "%s" "%s"' %(gld_prompt, err_prompt, n_tok, hparams.insertion_type, hparams.layer_to_modify)], shell=True)
+    subprocess.call(['./create_edited_model.sh "%s" "%s" "%s" "%s" "%s" "%s" "%s"' %(gld_prompt, err_prompt, n_tok_prompt, hparams.n_tok_start, hparams.n_tok_stop, hparams.insertion_type, hparams.layer_to_modify)], shell=True)
     tokenizer = AutoTokenizer.from_pretrained("./torch_model")
-    model = AutoModelForCausalLM.from_pretrained("./torch_model")
+    model = AutoModelForCausalLM.from_pretrained("./torch_model").to(device)
 
     os.chdir("../rome")
     

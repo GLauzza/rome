@@ -14,6 +14,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from dsets import AttributeSnippets
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def compute_rewrite_quality_zsre(
     model: AutoModelForCausalLM,
@@ -113,7 +115,7 @@ def test_batch_prediction_acc(model, tok, prompts: typing.List[str], target):
         ans = torch.argmax(gathered, dim=1)
 
         # correct_id = tok(target, padding=True, return_tensors="pt").to("cuda")[
-        correct_id = tok(target, padding=True, return_tensors="pt")[
+        correct_id = tok(target, padding=True, return_tensors="pt".to(device))[
             "input_ids"
         ]
         # Temporary hack to deal with foreign characters.

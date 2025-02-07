@@ -8,4 +8,5 @@ from util.hparams import HyperParams
 class ModelEditHyperParams(HyperParams):
     insertion_type: str
     layer_to_modify: int
-    n_tok: int
+    n_tok_start: int
+    n_tok_stop: int

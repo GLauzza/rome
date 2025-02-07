@@ -2,6 +2,7 @@ import collections
 import json
 from pprint import pprint
 from typing import List, Optional
+import os
 
 import numpy as np
 from scipy.stats import hmean
@@ -151,6 +152,8 @@ def main(
         pprint(cur_sum)
         summaries.append(cur_sum)
 
+        with open(os.path.join(run_dir, "summary.json"), "w") as f:
+            json.dump(summaries, f, indent=2)
     return uncompressed if get_uncompressed else summaries
 
 

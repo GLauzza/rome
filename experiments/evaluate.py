@@ -26,6 +26,8 @@ from rome import ROMEHyperParams, apply_rome_to_model
 from util import nethook
 from util.globals import *
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 ALG_DICT = {
     "ROME": (ROMEHyperParams, apply_rome_to_model),
     # "FT": (FTHyperParams, apply_ft_to_model),
@@ -94,7 +96,7 @@ def main(
     print("Instantiating model", model_name)
     if type(model_name) is str:
         # model = AutoModelForCausalLM.from_pretrained(model_name).cuda()
-        model = AutoModelForCausalLM.from_pretrained(model_name)
+        model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
         tok = AutoTokenizer.from_pretrained(model_name)
         tok.pad_token = tok.eos_token
     else:
@@ -144,7 +146,7 @@ def main(
             with torch.no_grad():
                 for k, v in weights_copy.items():
                     # nethook.get_parameter(model, k)[...] = v.to("cuda")
-                    nethook.get_parameter(model, k)[...] = v
+                    nethook.get_parameter(model, k)[...] = v.to(device)
             metrics["pre"] = ds_eval_method(model, tok, record, snips, vec)
 
             print("Evaluation took", time() - start)

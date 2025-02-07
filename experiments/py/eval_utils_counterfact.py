@@ -18,6 +18,7 @@ from dsets import AttributeSnippets
 from util.generate import generate_fast
 from util.perplexity import perplexity
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def compute_rewrite_quality_counterfact(
     model: AutoModelForCausalLM,
@@ -124,7 +125,7 @@ def test_batch_prediction(
         padding=True,
         return_tensors="pt",
     # ).to("cuda")
-    )
+    ).to(device)
 
     a_tok, b_tok = (tok(f" {n}")["input_ids"] for n in [target_new, target_true])
     choice_a_len, choice_b_len = (len(n) for n in [a_tok, b_tok])
