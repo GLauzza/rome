@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 from time import time
 from typing import Tuple, Union
+import sys
 
 import nltk
 import torch
@@ -25,6 +26,9 @@ from experiments.py.eval_utils_zsre import compute_rewrite_quality_zsre
 from rome import ROMEHyperParams, apply_rome_to_model
 from util import nethook
 from util.globals import *
+
+sys.path.append(os.path.join(os.getcwd(), "../llama.cpp"))
+from modified_models.modified_qwen2 import Qwen2ModifiedForCausalLM, Qwen2ModifiedConfig
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -95,9 +99,12 @@ def main(
     # Instantiate vanilla model
     print("Instantiating model", model_name)
     if type(model_name) is str:
-        # model = AutoModelForCausalLM.from_pretrained(model_name).cuda()
-        model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
-        tok = AutoTokenizer.from_pretrained(model_name)
+        if "Qwen" in model_name:
+            model = Qwen2ModifiedForCausalLM.from_pretrained("../llama.cpp/torch_model").to(device)
+            tok = AutoTokenizer.from_pretrained("../llama.cpp/torch_model")
+        else:
+            model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+            tok = AutoTokenizer.from_pretrained(model_name)
         tok.pad_token = tok.eos_token
     else:
         model, tok = model_name

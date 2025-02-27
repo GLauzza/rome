@@ -2,11 +2,15 @@ from copy import deepcopy
 from typing import Dict, List, Tuple
 import subprocess
 import os
+import sys
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .modeledit_hparams import ModelEditHyperParams
+
+sys.path.append(os.path.join(os.getcwd(), "../llama.cpp"))
+import hfedit
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,10 +59,8 @@ def execute_modeledit(model, tok, request, hparams):
     else:
         n_tok_prompt = tok(prompt_after_subject, return_length=True)["length"][0] + 1
 
-    subprocess.call(['./create_edited_model.sh "%s" "%s" "%s" "%s" "%s" "%s" "%s"' %(gld_prompt, err_prompt, n_tok_prompt, hparams.n_tok_start, hparams.n_tok_stop, hparams.insertion_type, hparams.layer_to_modify)], shell=True)
-    tokenizer = AutoTokenizer.from_pretrained("./torch_model")
-    model = AutoModelForCausalLM.from_pretrained("./torch_model").to(device)
+    model, tokenizer = hfedit.main(model, tok, gld_prompt, err_prompt, n_tok_prompt, hparams.n_tok_start, hparams.n_tok_stop, hparams.insertion_type, hparams.layer_to_modify)
 
     os.chdir("../rome")
     
-    return model, tokenizer
+    return model, {}

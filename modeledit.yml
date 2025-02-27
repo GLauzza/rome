@@ -3,18 +3,20 @@ channels:
   - pytorch
   - defaults
   - conda-forge
+  - nvidia
 dependencies:
   - python
   - pip
-  - pytorch
-  - torchvision
-  - cpuonly
+  - pytorch::pytorch
+  - pytorch::torchvision
+  - pytorch::pytorch-cuda==12.1
   - scipy
   - scikit-learn==1.0.2
   - nltk
   - datasets>=3.2.0
   - matplotlib
   - transformers>=4.48.0
+  - huggingface_hub>=0.26.0
   - sentencepiece
   - gguf>=0.10.0
   - accelerate
