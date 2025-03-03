@@ -43,21 +43,42 @@ def apply_modeledit_to_model(
     return model, weights_copy
 
 def execute_modeledit(model, tok, request, hparams):
-    prompt = request["prompt"].format(request["subject"])
-    prompt_after_subject = prompt.split(request["subject"])[-1]
-    instruction = "Complete in a single sentence. "
-    target = request["target_new"]["str"]
+    requested_rewrite = request["requested_rewrite"]
+
+    instruction = "Complete each of the following sentences. "
+    target = requested_rewrite["target_new"]["str"]
+    true = requested_rewrite["target_true"]["str"]
+
+    # prompt_without_answer = requested_rewrite["prompt"].format(requested_rewrite["subject"])
+    # prompt = prompt_without_answer + " " + target + ". "
+    # paraphrase_prompts = "".join([p + " " + target + ". " for p in request["paraphrase_prompts"]])
+    # neighborhood_prompts = "".join([p + " " + true + ". " for p in request["neighborhood_prompts"]])
+
+    # gld_prompt = instruction + paraphrase_prompts + neighborhood_prompts + prompt + prompt_without_answer
+    # err_prompt = prompt_without_answer
+
+    # if hparams.n_tok_start == -1 or hparams.n_tok_start == -3:
+    #     n_tok_prompt = tok(" " + prompt_without_answer, return_length=True)["length"][0]
+    # else:
+    #     prompt_after_subject = prompt_without_answer.split(requested_rewrite["subject"])[-1]
+    #     n_tok_prompt = tok(prompt_after_subject, return_length=True)["length"][0] + 1
+
+    prompt = requested_rewrite["prompt"].format(requested_rewrite["subject"])
+
+    n_tok_prompt = [tok(" " + prompt, return_length=True)["length"][0]]
+    gld_prompt = [instruction + prompt + " " + target + ". " + prompt]
+    err_prompt = [prompt]
+
+    for p in request["paraphrase_prompts"]:
+        gld_prompt.append(instruction + p + " " + target + ". ")
+        err_prompt.append(p)
+        n_tok_prompt.append(tok(" " + p, return_length=True)["length"][0])
+    for p in request["neighborhood_prompts"]:
+        gld_prompt.append(instruction + p + " " + true + ". ")
+        err_prompt.append(p)
+        n_tok_prompt.append(tok(" " + p, return_length=True)["length"][0])
 
     os.chdir("../llama.cpp")
-
-    padding_length = tok(" " + target + ". " + prompt, return_length=True)["length"][0]
-
-    gld_prompt = instruction + prompt + " " + target + ". " + prompt
-    err_prompt = instruction  + padding_length*"_ " + prompt
-    if hparams.n_tok_start == -1 or hparams.n_tok_start == -3:
-        n_tok_prompt = tok(" " + prompt, return_length=True)["length"][0]
-    else:
-        n_tok_prompt = tok(prompt_after_subject, return_length=True)["length"][0] + 1
 
     model, tokenizer = hfedit.main(model, tok, gld_prompt, err_prompt, n_tok_prompt, hparams.n_tok_start, hparams.n_tok_stop, hparams.insertion_type, hparams.layer_to_modify)
 

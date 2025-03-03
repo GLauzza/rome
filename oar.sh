@@ -18,7 +18,7 @@ export CUDA_PATH=/grid5000/spack/v1/opt/spack/linux-debian11-x86_64_v2/gcc-10.4.
 module load gcc/10.4.0_gcc-10.4.0
 nvidia-smi
 
-python3 -m experiments.evaluate --alg_name="ModelEdit" --model_name="Qwen/Qwen2.5-0.5B" --hparams_fname="Qwen_Qwen2.5-0.5B.json" --skip_generation_tests --dataset_size_limit=50
+python3 -m experiments.evaluate --alg_name="ModelEdit" --model_name="Qwen/Qwen2.5-0.5B" --hparams_fname="Qwen_Qwen2.5-0.5B.json" --skip_generation_tests --dataset_size_limit=7 --continue_from_run="run_727"
 
 # for i in $(seq 0 24) 
 # do
