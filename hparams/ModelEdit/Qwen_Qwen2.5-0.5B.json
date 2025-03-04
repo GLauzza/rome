@@ -1,6 +1,7 @@
 {
-  "insertion_type": "reccursive",
-  "layer_to_modify": 23,
+  "insertion_type": "single",
+  "layer_to_modify": 20,
   "n_tok_start": -1,
-  "n_tok_stop": -1
+  "n_tok_stop": -1,
+  "method": "classic"
 } 

@@ -27,7 +27,6 @@ from rome import ROMEHyperParams, apply_rome_to_model
 from util import nethook
 from util.globals import *
 
-sys.path.append(os.path.join(os.getcwd(), "../llama.cpp"))
 from modified_models.modified_qwen2 import Qwen2ModifiedForCausalLM, Qwen2ModifiedConfig
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -100,8 +99,8 @@ def main(
     print("Instantiating model", model_name)
     if type(model_name) is str:
         if "Qwen" in model_name:
-            model = Qwen2ModifiedForCausalLM.from_pretrained("../llama.cpp/torch_model").to(device)
-            tok = AutoTokenizer.from_pretrained("../llama.cpp/torch_model")
+            model = Qwen2ModifiedForCausalLM.from_pretrained("./torch_model").to(device)
+            tok = AutoTokenizer.from_pretrained("./torch_model")
         else:
             model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
             tok = AutoTokenizer.from_pretrained(model_name)

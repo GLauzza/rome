@@ -10,3 +10,4 @@ class ModelEditHyperParams(HyperParams):
     layer_to_modify: int
     n_tok_start: int
     n_tok_stop: int
+    method: str
