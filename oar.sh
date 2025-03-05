@@ -1,7 +1,7 @@
 #!/bin/bash 
 #OAR -q production
 #OAR -n Evaluate ModelEdit
-#OAR -l host=1/gpu=1, walltime=1
+#OAR -l host=1/gpu=1, walltime=36
 #OAR -O ./OAR_logs/OAR_%jobid%.out
 #OAR -E ./OAR_logs/OAR_%jobid%.out
 
@@ -20,9 +20,10 @@ nvidia-smi
 
 # python3 -m experiments.evaluate --dataset_size_limit=50 --alg_name="ModelEdit" --model_name="Qwen/Qwen2.5-0.5B" --hparams_fname="Qwen_Qwen2.5-0.5B.json" --skip_generation_tests
 
-for i in $(seq 616 639) 
+for i in $(seq 616 711) 
 do
     mkdir ./results/ModelEdit/run_$i
+    cp ./hparams/ModelEdit/Qwen_Qwen2.5-0.5B_$i.json ./results/ModelEdit/run_$i/params.json 
     python3 -m experiments.evaluate --dataset_size_limit=10 --alg_name="ModelEdit" --model_name="Qwen/Qwen2.5-0.5B" --hparams_fname="Qwen_Qwen2.5-0.5B_$i.json" --skip_generation_tests --continue_from_run="run_$i"
     python3 -m experiments.summarize --dir_name="ModelEdit" --runs="run_$i"
 done

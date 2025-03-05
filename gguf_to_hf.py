@@ -13,7 +13,6 @@ def main():
     m = "qwen2.5-0.5b-q_8_0.gguf"
     tokenizer = AutoTokenizer.from_pretrained(d, gguf_file=m)
     model = AutoModelForCausalLM.from_pretrained(d, gguf_file=m)
-    print(tokenizer)
 
     model.config.to_json_file("./torch_model/config.json")
     modified_config = Qwen2ModifiedConfig.from_json_file("./torch_model/config.json")
